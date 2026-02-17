@@ -230,10 +230,10 @@ class ProxyHandler {
   async handleStreamRequest(req, res) {
     try {
       const openaiRequest = req.body;
-      console.log('收到请求:', JSON.stringify(openaiRequest, null, 2));
+      // console.log('收到请求:', JSON.stringify(openaiRequest, null, 2));
       
       const codexRequest = this.transformRequest(openaiRequest);
-      console.log('转换后的 Codex 请求:', JSON.stringify(codexRequest, null, 2));
+      // console.log('转换后的 Codex 请求:', JSON.stringify(codexRequest, null, 2));
       
       const accessToken = await this.tokenManager.getValidToken();
 
@@ -345,10 +345,10 @@ class ProxyHandler {
   async handleNonStreamRequest(req, res) {
     try {
       const openaiRequest = req.body;
-      console.log('收到请求:', JSON.stringify(openaiRequest, null, 2));
+      // console.log('收到请求:', JSON.stringify(openaiRequest, null, 2));
       
       const codexRequest = this.transformRequest({ ...openaiRequest, stream: false });
-      console.log('转换后的 Codex 请求:', JSON.stringify(codexRequest, null, 2));
+      // console.log('转换后的 Codex 请求:', JSON.stringify(codexRequest, null, 2));
       
       const accessToken = await this.tokenManager.getValidToken();
 

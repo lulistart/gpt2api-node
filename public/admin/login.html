@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理员登录 - GPT2API Node</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    /* 按钮悬停效果 */
+    .btn-primary {
+      transition: background-color 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2563eb;
+    }
+    
+    /* 输入框焦点效果 */
+    .input-focus:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-lg mb-4">
+        <i class="fas fa-lock text-white text-2xl"></i>
+      </div>
+      <h1 class="text-2xl font-semibold text-gray-900">管理员登录</h1>
+      <p class="text-sm text-gray-500 mt-2">GPT2API Node 管理系统</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <!-- Username -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            用户名
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-user text-gray-400"></i>
+            </div>
+            <input 
+              type="text" 
+              id="username"
+              class="input-focus block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
+              placeholder="请输入用户名"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            密码
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-key text-gray-400"></i>
+            </div>
+            <input 
+              type="password" 
+              id="password"
+              class="input-focus block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none transition"
+              placeholder="请输入密码"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div class="flex items-center">
+            <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+            <span class="text-sm text-red-700" id="errorText"></span>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          id="loginBtn"
+          class="btn-primary w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200 flex items-center justify-center"
+        >
+          <i class="fas fa-sign-in-alt mr-2"></i>
+          登录
+        </button>
+      </form>
+
+      <!-- Hint -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <div class="text-center text-sm text-gray-500">
+          <i class="fas fa-info-circle mr-1"></i>
+          默认账户: <span class="font-medium text-gray-700">admin / admin123</span>
+        </div>
+        <div class="text-center text-xs text-gray-400 mt-2">
+          首次登录后请立即修改密码
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      errorDiv.classList.add('hidden');
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 登录中...';
+      
+      try {
+        const response = await fetch('/admin/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          window.location.href = '/admin/';
+        } else {
+          errorText.textContent = data.error || '登录失败';
+          errorDiv.classList.remove('hidden');
+        }
+      } catch (error) {
+        errorText.textContent = '网络错误: ' + error.message;
+        errorDiv.classList.remove('hidden');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> 登录';
+      }
+    }
+  </script>
+</body>
+</html>

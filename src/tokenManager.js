@@ -1,9 +1,15 @@
 import fs from 'fs/promises';
 import axios from 'axios';
+import httpsProxyAgent from 'https-proxy-agent';
+
+const { HttpsProxyAgent } = httpsProxyAgent;
 
 // OpenAI OAuth 配置
 const TOKEN_URL = 'https://auth.openai.com/oauth/token';
 const CLIENT_ID = 'app_EMoamEEZ73f0CkXaXp7hrann';
+
+// 代理配置
+const PROXY_URL = process.env.HTTP_PROXY || process.env.HTTPS_PROXY;
 
 /**
  * Token 管理器
@@ -45,10 +51,10 @@ class TokenManager {
    * 检查 token 是否过期
    */
   isTokenExpired() {
-    if (!this.tokenData || !this.tokenData.expired) {
+    if (!this.tokenData || !this.tokenData.expired_at) {
       return true;
     }
-    const expireTime = new Date(this.tokenData.expired);
+    const expireTime = new Date(this.tokenData.expired_at);
     const now = new Date();
     // 提前 5 分钟刷新
     return expireTime.getTime() - now.getTime() < 5 * 60 * 1000;
@@ -72,12 +78,20 @@ class TokenManager {
         scope: 'openid profile email'
       });
 
-      const response = await axios.post(TOKEN_URL, params.toString(), {
+      const config = {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         }
-      });
+      };
+
+      // 如果配置了代理，使用代理
+      if (PROXY_URL) {
+        config.httpsAgent = new HttpsProxyAgent(PROXY_URL);
+        console.log(`使用代理: ${PROXY_URL}`);
+      }
+
+      const response = await axios.post(TOKEN_URL, params.toString(), config);
 
       const { access_token, refresh_token, id_token, expires_in } = response.data;
 
@@ -87,8 +101,8 @@ class TokenManager {
         access_token,
         refresh_token: refresh_token || this.tokenData.refresh_token,
         id_token: id_token || this.tokenData.id_token,
-        expired: new Date(Date.now() + expires_in * 1000).toISOString(),
-        last_refresh: new Date().toISOString()
+        expired_at: new Date(Date.now() + expires_in * 1000).toISOString(),
+        last_refresh_at: new Date().toISOString()
       };
 
       await this.saveToken(newTokenData);
@@ -123,7 +137,7 @@ class TokenManager {
     return {
       email: this.tokenData?.email,
       account_id: this.tokenData?.account_id,
-      expired: this.tokenData?.expired,
+      expired_at: this.tokenData?.expired_at,
       type: this.tokenData?.type
     };
   }

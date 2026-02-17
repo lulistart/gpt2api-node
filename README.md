@@ -1,15 +1,55 @@
 # GPT2API Node
 
-基于 Node.js + Express 的 OpenAI Codex 反向代理服务，支持 JSON 文件导入 token，自动刷新 token，提供 OpenAI 兼容的 API 接口。
+基于 Node.js + Express 的 OpenAI Codex 反向代理服务，支持多账号管理、自动刷新 token、负载均衡，提供 OpenAI 兼容的 API 接口和完整的管理后台。
+
+## 界面预览
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/管理员登录.png" alt="管理员登录" />
+      <p align="center">管理员登录</p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/仪表盘.png" alt="仪表盘" />
+      <p align="center">仪表盘</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/API keys.png" alt="API Keys管理" />
+      <p align="center">API Keys 管理</p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/账号管理.png" alt="账号管理" />
+      <p align="center">账号管理</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <img src="screenshots/数据分析.png" alt="数据分析" />
+      <p align="center">数据分析</p>
+    </td>
+    <td width="50%">
+      <img src="screenshots/系统设置.png" alt="系统设置" />
+      <p align="center">系统设置</p>
+    </td>
+  </tr>
+</table>
 
 ## 功能特性
 
 - ✅ OpenAI Codex 反向代理
+- ✅ 完整的 Web 管理后台
+- ✅ 多账号管理和批量导入
 - ✅ 自动 Token 刷新机制
+- ✅ 负载均衡（轮询/随机/最少使用）
+- ✅ API Key 管理和认证
+- ✅ 请求统计和数据分析
 - ✅ 支持流式和非流式响应
 - ✅ OpenAI API 兼容接口
-- ✅ JSON 文件导入 Token
-- ✅ 简单易用的配置
+- ✅ 批量删除账号功能
+- ✅ 实时活动记录
 
 ## 快速开始
 
@@ -20,37 +60,17 @@ cd gpt2api-node
 npm install
 ```
 
-### 2. 配置 Token
-
-从 CLIProxyAPI 或其他来源获取 token 文件，复制到项目根目录并命名为 `token.json`：
-
-```json
-{
-  "id_token": "your_id_token_here",
-  "access_token": "your_access_token_here",
-  "refresh_token": "your_refresh_token_here",
-  "account_id": "your_account_id",
-  "email": "your_email@example.com",
-  "type": "codex",
-  "expired": "2026-12-31T23:59:59.000Z",
-  "last_refresh": "2026-01-01T00:00:00.000Z"
-}
-```
-
-### 3. 配置环境变量（可选）
-
-复制 `.env.example` 为 `.env` 并修改配置：
+### 2. 初始化数据库
 
 ```bash
-cp .env.example .env
+npm run init-db
 ```
 
-```env
-PORT=3000
-TOKEN_FILE=./token.json
-```
+默认管理员账户：
+- 用户名：`admin`
+- 密码：`admin123`
 
-### 4. 启动服务
+### 3. 启动服务
 
 ```bash
 npm start
@@ -62,16 +82,71 @@ npm start
 npm run dev
 ```
 
+### 4. 访问管理后台
+
+打开浏览器访问：`http://localhost:3000/admin`
+
+使用默认账户登录后，请立即修改密码。
+
+## 管理后台功能
+
+### 仪表盘
+- 系统概览和实时统计
+- API Keys 数量
+- Token 账号数量
+- 今日请求数和成功率
+- 最近活动记录
+
+### API Keys 管理
+- 创建和管理 API Keys
+- 查看使用统计
+- 启用/禁用 API Key
+
+### 账号管理
+- 批量导入 Token（支持 JSON 文件）
+- 手动添加账号
+- 批量删除账号
+- 查看账号额度和使用情况
+- 刷新账号额度
+- 负载均衡策略配置
+
+### 数据分析
+- 请求量趋势图表
+- 模型使用分布
+- 账号详细统计
+- API 请求日志
+
+### 系统设置
+- 修改管理员密码
+- 负载均衡策略设置
+
+## 负载均衡策略
+
+支持三种负载均衡策略：
+
+1. **轮询（round-robin）**：按顺序依次使用每个账号
+2. **随机（random）**：随机选择一个可用账号
+3. **最少使用（least-used）**：选择请求次数最少的账号
+
+可在管理后台的账号管理页面或通过环境变量配置。
+
 ## API 接口
 
 ### 聊天完成接口
 
 **端点**: `POST /v1/chat/completions`
 
+**请求头**:
+```
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
 **请求示例**:
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-5.3-codex",
@@ -86,6 +161,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-5.3-codex",
@@ -115,7 +191,6 @@ curl http://localhost:3000/health
 ## 支持的模型
 
 - `gpt-5.3-codex` - GPT 5.3 Codex（最新）
-- `gpt-5.3-codex-spark` - GPT 5.3 Codex Spark（超快速编码模型）
 - `gpt-5.2` - GPT 5.2
 - `gpt-5.2-codex` - GPT 5.2 Codex
 - `gpt-5.1` - GPT 5.1
@@ -130,12 +205,12 @@ curl http://localhost:3000/health
 
 Cherry Studio 是一个支持多种 AI 服务的桌面客户端。配置步骤：
 
-### 1. 启动代理服务
+### 1. 创建 API Key
 
-```bash
-cd gpt2api-node
-npm start
-```
+1. 访问管理后台：`http://localhost:3000/admin`
+2. 进入 **API Keys** 页面
+3. 点击 **创建 API Key**
+4. 复制生成的 API Key（只显示一次）
 
 ### 2. 在 Cherry Studio 中配置
 
@@ -145,21 +220,12 @@ npm start
 4. 填写配置：
    - **名称**: GPT2API Node（或自定义名称）
    - **API 地址**: `http://localhost:3000/v1`
-   - **API Key**: 随意填写（如 `dummy`），不会被验证
+   - **API Key**: 粘贴刚才创建的 API Key
    - **模型**: 选择或手动输入模型名称（如 `gpt-5.3-codex`）
 
 ### 3. 开始使用
 
 配置完成后，在 Cherry Studio 中选择刚才添加的提供商和模型，即可开始对话。
-
-### 可用模型列表
-
-在 Cherry Studio 中可以使用以下任意模型：
-- `gpt-5.3-codex` - 推荐，最新版本
-- `gpt-5.3-codex-spark` - 超快速编码
-- `gpt-5.2-codex` - 稳定版本
-- `gpt-5.1-codex` - 较旧版本
-- 其他 GPT-5 系列模型
 
 ## 使用示例
 
@@ -170,7 +236,7 @@ import openai
 
 client = openai.OpenAI(
     base_url="http://localhost:3000/v1",
-    api_key="dummy"  # 不需要真实的 API key
+    api_key="YOUR_API_KEY"
 )
 
 response = client.chat.completions.create(
@@ -190,7 +256,7 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({
   baseURL: 'http://localhost:3000/v1',
-  apiKey: 'dummy'
+  apiKey: 'YOUR_API_KEY'
 });
 
 const response = await client.chat.completions.create({
@@ -203,77 +269,115 @@ const response = await client.chat.completions.create({
 console.log(response.choices[0].message.content);
 ```
 
-### cURL
+## Token 管理
 
-```bash
-curl http://localhost:3000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-5.3-codex",
-    "messages": [
-      {"role": "system", "content": "You are a helpful assistant."},
-      {"role": "user", "content": "What is the capital of France?"}
-    ]
-  }'
+### 批量导入
+
+1. 准备 JSON 文件，格式如下：
+
+```json
+[
+  {
+    "access_token": "your_access_token",
+    "refresh_token": "your_refresh_token",
+    "id_token": "your_id_token",
+    "account_id": "account_id",
+    "email": "email@example.com",
+    "name": "账号名称"
+  }
+]
 ```
 
-## Token 管理
+2. 在管理后台的账号管理页面点击 **导入 JSON**
+3. 选择文件或粘贴 JSON 内容
+4. 预览后确认导入
+
+### 手动添加
+
+在管理后台的账号管理页面点击 **手动添加**，填写必要信息。
 
 ### 自动刷新
 
-服务会自动检测 token 是否过期（提前 5 分钟），并在需要时自动刷新。刷新后的 token 会自动保存到文件中。
+服务会自动检测 token 是否过期，并在需要时自动刷新。
 
-### 手动导入
+## 环境变量配置
 
-如果你有从 CLIProxyAPI 导出的 token 文件，直接复制为 `token.json` 即可使用。
+创建 `.env` 文件：
 
-### Token 文件格式
-
-Token 文件必须包含以下字段：
-
-- `access_token`: 访问令牌
-- `refresh_token`: 刷新令牌
-- `id_token`: ID 令牌（可选）
-- `account_id`: 账户 ID（可选）
-- `email`: 邮箱（可选）
-- `expired`: 过期时间（ISO 8601 格式）
-- `type`: 类型（固定为 "codex"）
+```env
+PORT=3000
+SESSION_SECRET=your-secret-key-change-in-production
+LOAD_BALANCE_STRATEGY=round-robin
+MODELS_FILE=./models.json
+```
 
 ## 项目结构
 
 ```
 gpt2api-node/
 ├── src/
-│   ├── index.js           # 主服务器文件
-│   ├── tokenManager.js    # Token 管理模块
-│   └── proxyHandler.js    # 代理处理模块
+│   ├── index.js              # 主服务器文件
+│   ├── tokenManager.js       # Token 管理模块
+│   ├── proxyHandler.js       # 代理处理模块
+│   ├── config/
+│   │   └── database.js       # 数据库配置
+│   ├── models/
+│   │   └── index.js          # 数据模型
+│   ├── routes/
+│   │   ├── auth.js           # 认证路由
+│   │   ├── apiKeys.js        # API Keys 路由
+│   │   ├── tokens.js         # Tokens 路由
+│   │   ├── stats.js          # 统计路由
+│   │   └── settings.js       # 设置路由
+│   ├── middleware/
+│   │   └── auth.js           # 认证中间件
+│   └── scripts/
+│       └── initDatabase.js   # 数据库初始化脚本
+├── public/
+│   └── admin/                # 管理后台前端
+│       ├── index.html
+│       ├── login.html
+│       └── js/
+│           └── admin.js
+├── database/
+│   └── app.db                # SQLite 数据库
+├── models.json               # 模型配置
 ├── package.json
-├── .env.example
-├── token.example.json
-├── .gitignore
 └── README.md
 ```
 
 ## 注意事项
 
-1. **Token 安全**: 请妥善保管 `token.json` 文件，不要提交到版本控制系统
+1. **安全性**: 
+   - 首次登录后请立即修改管理员密码
+   - 妥善保管 API Keys
+   - 生产环境请使用 HTTPS
+
 2. **网络要求**: 需要能够访问 `chatgpt.com` 和 `auth.openai.com`
+
 3. **Token 有效期**: Token 会自动刷新，但如果 refresh_token 失效，需要重新获取
+
 4. **并发限制**: 根据 OpenAI 账户限制，注意控制并发请求数量
 
 ## 故障排除
 
-### Token 加载失败
+### 无法访问管理后台
 
-确保 `token.json` 文件存在且格式正确，参考 `token.example.json`。
+确保服务已启动，访问 `http://localhost:3000/admin`
+
+### 数据库初始化失败
+
+删除 `database/app.db` 文件，重新运行 `npm run init-db`
 
 ### Token 刷新失败
 
-可能是 refresh_token 已过期，需要重新从 CLIProxyAPI 获取新的 token。
+可能是 refresh_token 已过期，需要重新导入新的 token
 
-### 代理请求失败
+### API 请求失败
 
-检查网络连接，确保能够访问 OpenAI 服务。
+1. 检查 API Key 是否正确
+2. 确保有可用的 Token 账号
+3. 查看管理后台的请求日志
 
 ## 许可证
 

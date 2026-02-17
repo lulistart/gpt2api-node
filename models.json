@@ -6,12 +6,6 @@
     "owned_by": "openai"
   },
   {
-    "id": "gpt-5.3-codex-spark",
-    "object": "model",
-    "created": 1770912000,
-    "owned_by": "openai"
-  },
-  {
     "id": "gpt-5.2",
     "object": "model",
     "created": 1765440000,
