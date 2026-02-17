@@ -1,0 +1,10 @@
+{
+  "id_token": "your_id_token_here",
+  "access_token": "your_access_token_here",
+  "refresh_token": "your_refresh_token_here",
+  "account_id": "your_account_id",
+  "email": "your_email@example.com",
+  "type": "codex",
+  "expired": "2026-12-31T23:59:59.000Z",
+  "last_refresh": "2026-01-01T00:00:00.000Z"
+}
