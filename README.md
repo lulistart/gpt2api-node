@@ -53,14 +53,34 @@
 
 ## 快速开始
 
-### 1. 安装依赖
+### 方式一：Docker 部署（推荐）
+
+使用 Docker Compose 一键部署：
+
+```bash
+# 克隆项目
+git clone https://github.com/lulistart/gpt2api-node.git
+cd gpt2api-node
+
+# 启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+```
+
+服务将在 `http://localhost:3000` 启动。
+
+### 方式二：本地部署
+
+#### 1. 安装依赖
 
 ```bash
 cd gpt2api-node
 npm install
 ```
 
-### 2. 初始化数据库
+#### 2. 初始化数据库
 
 ```bash
 npm run init-db
@@ -70,7 +90,7 @@ npm run init-db
 - 用户名：`admin`
 - 密码：`admin123`
 
-### 3. 启动服务
+#### 3. 启动服务
 
 ```bash
 npm start
@@ -82,7 +102,7 @@ npm start
 npm run dev
 ```
 
-### 4. 访问管理后台
+#### 4. 访问管理后台
 
 打开浏览器访问：`http://localhost:3000/admin`
 

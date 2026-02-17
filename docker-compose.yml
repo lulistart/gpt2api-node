@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  gpt2api:
+    build: .
+    container_name: gpt2api-node
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./database:/app/database
+      - ./models.json:/app/models.json
+    environment:
+      - PORT=3000
+      - LOAD_BALANCE_STRATEGY=round-robin
+      - SESSION_SECRET=${SESSION_SECRET:-change-this-secret-in-production}
+    command: sh -c "npm run init-db && npm start"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
