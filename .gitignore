@@ -4,6 +4,5 @@ token.json
 *.log
 .DS_Store
 database/app.db
-.env.exa
 plans/
 UI.md
