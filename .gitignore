@@ -3,3 +3,5 @@ node_modules/
 token.json
 *.log
 .DS_Store
+database/app.db
+.env.exa
