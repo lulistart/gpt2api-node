@@ -385,4 +385,4 @@ MIT License
 
 ## 相关项目
 
-- [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) - 原始 Go 语言实现
+- [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI)
